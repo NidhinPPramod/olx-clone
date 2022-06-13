@@ -1,29 +1,64 @@
-import React from 'react';
-
+import React, {useContext, useEffect, useState} from 'react';
 import './View.css';
+import {PostContext} from "../Context/Post Context";
+import {FirebaseContext} from "../../Firebase/Context";
+import {collection, getDocs, where} from "firebase/firestore";
+
 function View() {
-  return (
-    <div className="viewParentDiv">
-      <div className="imageShowDiv">
-        <img
-          src="../../../Images/R15V3.jpg"
-          alt=""
-        />
-      </div>
-      <div className="rightSection">
-        <div className="productDetails">
-          <p>&#x20B9; 250000 </p>
-          <span>YAMAHA R15V3</span>
-          <p>Two Wheeler</p>
-          <span>Tue May 04 2021</span>
+
+    const [userDetails, setUserDetails] = useState([])
+    const {postDetails} = useContext(PostContext)
+    const {db} = useContext(FirebaseContext)
+
+    const collectionRef = collection(db, "users")
+
+    useEffect(() => {
+        const {userid} = postDetails
+        console.log(postDetails)
+        getDocs(collectionRef, where('id', '==', userid)).then((response) => {
+            setUserDetails((response.docs.map((obj) => ({...obj.data()}))))
+            console.log(userDetails)
+        })
+    }, [])
+
+    return (
+        <div className="viewParentDiv">
+
+            {postDetails.map((value) => {
+                return (
+                    <div>
+                        <div className="imageShowDiv">
+                            <img
+                                width="50px"
+                                height="50px"
+                                src={value.url}
+                                alt=""
+                            />
+                        </div>
+                        <div className="rightSection">
+                            <div className="productDetails">
+                                <p>&#x20B9; {value.price} </p>
+                                <span>{value.name}</span>
+                                <p>{value.category}</p>
+                                <span>{value.createdDate}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                )
+            })}
+            {userDetails.map((value)=>{
+                return(
+                    <div className="contactDetails">
+                        <p>Seller details</p>
+                        <p>{value.username}</p>
+                        <p>{value.phone}</p>
+                    </div>
+                )
+            })
+           }
         </div>
-        <div className="contactDetails">
-          <p>Seller details</p>
-          <p>No name</p>
-          <p>1234567890</p>
-        </div>
-      </div>
-    </div>
-  );
+    );
 }
+
 export default View;
